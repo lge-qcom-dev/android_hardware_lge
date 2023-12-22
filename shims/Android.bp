@@ -8,3 +8,10 @@ cc_library_shared {
     srcs: ["libfpsph_stub.c"],
     vendor: true,
 }
+
+cc_library {
+    name: "libRbsFlow_shim",
+    shared_libs: ["libc", "liblog"],
+    srcs: ["libRbsFlow_shim.c"],
+    vendor: true
+}

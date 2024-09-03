@@ -20,8 +20,8 @@ function extract_kdz() {
     find "${KDZ_EXTRACT_DIR}" -name "*.dz" -exec python "$KDZTOOLS_DIR"/undz.py -f {} -s -d "${2}" \;
 
     # Clean up
-    rm -rf "${2}"/*_b.image
-    for i in "${2}"/*.image; do mv -- "${i}" "${i/.image/.img}"; done
+    rm -rf "${2}"/*_b.img
+    for i in "${2}"/*_a.img; do mv -- "${i}" "${i/_a.img/.img}"; done
 }
 
 #

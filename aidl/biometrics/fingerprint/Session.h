@@ -5,8 +5,16 @@
  */
 
 #pragma once
+#define LOG_TAG "android.hardware.biometrics.fingerprint-service.lge"
 
 #include <aidl/android/hardware/biometrics/fingerprint/BnSession.h>
+#include <aidl/android/hardware/biometrics/fingerprint/ISessionCallback.h>
+#include <android/log.h>
+#include <hardware/hardware.h>
+#include <log/log.h>
+
+#include "LockoutTracker.h"
+#include "EgisRbs.h"
 
 using ::aidl::android::hardware::biometrics::common::ICancellationSignal;
 using ::aidl::android::hardware::biometrics::common::OperationContext;
@@ -15,8 +23,12 @@ using ::aidl::android::hardware::keymaster::HardwareAuthToken;
 
 namespace aidl::android::hardware::biometrics::fingerprint {
 
+void onClientDeath(void* cookie);
+
 class Session : public BnSession {
   public:
+    Session(rbs_fingerprint_device_t* device, int userId, std::shared_ptr<ISessionCallback> cb,
+            LockoutTracker lockoutTracker);
     ndk::ScopedAStatus generateChallenge() override;
     ndk::ScopedAStatus revokeChallenge(int64_t challenge) override;
     ndk::ScopedAStatus enroll(const HardwareAuthToken& hat,
@@ -46,6 +58,44 @@ class Session : public BnSession {
     ndk::ScopedAStatus onContextChanged(const OperationContext& context) override;
     ndk::ScopedAStatus onPointerCancelWithContext(const PointerContext& context) override;
     ndk::ScopedAStatus setIgnoreDisplayTouches(bool shouldIgnore) override;
+
+    ndk::ScopedAStatus cancel();
+    binder_status_t linkToDeath(AIBinder* binder);
+    bool isClosed();
+    void notify(uint32_t eventId, uint32_t value1, uint32_t value2, void* buffer,
+                                   uint32_t buffer_size);
+
+  private:
+    rbs_fingerprint_device_t* mDevice;
+    LockoutTracker mLockoutTracker;
+    bool mClosed = false;
+
+    bool checkSensorLockout();
+    void clearLockout(bool clearAttemptCounter);
+    void startLockoutTimer(int64_t timeout);
+    void lockoutTimerExpired();
+
+    // lockout timer
+    bool mIsLockoutTimerStarted = false;
+    bool mIsLockoutTimerAborted = false;
+
+    // The user ID for which this session was created.
+    int32_t mUserId;
+
+    // Callback for talking to the framework. This callback must only be called from non-binder
+    // threads to prevent nested binder calls and consequently a binder thread exhaustion.
+    // Practically, it means that this callback should always be called from the worker thread.
+    std::shared_ptr<ISessionCallback> mCb;
+
+    // Binder death handler.
+    AIBinder_DeathRecipient* mDeathRecipient;
+
+    // LGE adds
+    void setFodHbm(bool status);
+    void resetLgeTouchPanel(void);
+    bool hbmFodEnabled;
+    std::string mHbmPath;
+    std::mutex mSetHbmFodMutex;
 };
 
 }  // namespace aidl::android::hardware::biometrics::fingerprint

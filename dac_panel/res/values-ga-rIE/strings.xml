@@ -21,6 +21,7 @@
     <string name="hifi_mode">Modh HiFi</string>
     <string name="hifi_mode_normal">Gnáth</string>
     <string name="hifi_mode_him">Coisceas Ard</string>
+    <string name="hifi_mode_aux-him">AUX Impedance Ard</string>
     <string name="avc_volume">Fuaim AVC</string>
     <string name="avc_volume_summary">Ardaíonn an toirt</string>
 </resources>

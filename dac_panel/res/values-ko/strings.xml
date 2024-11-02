@@ -21,6 +21,7 @@
     <string name="hifi_mode">HiFi 모드</string>
     <string name="hifi_mode_normal">기본</string>
     <string name="hifi_mode_him">높은 임피던스</string>
+    <string name="hifi_mode_aux-him">AUX 높은 임피던스</string>
     <string name="avc_volume">AVC 볼륨</string>
     <string name="avc_volume_summary">볼륨 증폭</string>
 </resources>

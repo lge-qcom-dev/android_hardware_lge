@@ -18,9 +18,25 @@
     <string name="digital_filter_0">Gearr</string>
     <string name="digital_filter_1">Géar</string>
     <string name="digital_filter_2">Mall</string>
+    <string name="digital_filter_3">Scagaire Inoiriúnaithe</string>
+    <string name="customizable_filter_settings">Socruithe Scagaire Inoiriúnaithe</string>
+    <string name="cf_shape">Cruth Scagaire Saincheaptha</string>
+    <string name="cf_shape_0">Rolladh as go tapa</string>
+    <string name="cf_shape_1">Rolladh as go mall</string>
+    <string name="cf_shape_2">Rolladh tapa de réir íoschéime</string>
+    <string name="cf_shape_3">Rolladh mall de réir íoschéime</string>
+    <string name="cf_shape_4">Apodizing tapa rolladh as</string>
+    <string name="cf_shape_5">Hibrid tapa rolladh as</string>
+    <string name="cf_shape_6">Balla bríce</string>
+    <string name="cf_symmetry">Siméadracht Scagaire Saincheaptha</string>
+    <string name="cf_symmetry_0">Siméadracht Síné</string>
+    <string name="cf_symmetry_1">Siméadracht Chósain</string>
+    <string name="customizable_filter_coeffs">Comhéifeachtaí Scagaire Inoiriúnaithe</string>
+    <string name="customizable_filter_coeffs_summary">TABHAIR FAOI DEARA: Más é 0 na comhéifeachtaí go léir, balbhófar an fhuaim</string>
     <string name="hifi_mode">Modh HiFi</string>
     <string name="hifi_mode_normal">Gnáth</string>
     <string name="hifi_mode_him">Coisceas Ard</string>
+    <string name="hifi_mode_aux-him">AUX Impedance Ard</string>
     <string name="avc_volume">Fuaim AVC</string>
     <string name="avc_volume_summary">Ardaíonn an toirt</string>
 </resources>

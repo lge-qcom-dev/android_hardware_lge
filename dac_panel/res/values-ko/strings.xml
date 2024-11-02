@@ -18,12 +18,20 @@
     <string name="digital_filter_0">기본 (Short)</string>
     <string name="digital_filter_1">자연스럽게 (Sharp)</string>
     <string name="digital_filter_2">깨끗하게 (Slow)</string>
+    <string name="digital_filter_3">사용자 정의 필터</string>
+    <string name="customizable_filter_settings">사용자 정의 필터 설정</string>
+    <string name="cf_shape">사용자 정의 필터 모양</string>
+    <string name="cf_shape_0">빠른 롤 오프</string>
+    <string name="cf_shape_1">느린 롤 오프</string>
     <string name="cf_shape_2">미니멈 페이즈 빠른 롤 오프</string>
     <string name="cf_shape_3">미니멈 페이즈 느린 롤 오프</string>
+    <string name="cf_shape_4">아포다이징 빠른 롤 오프</string>
     <string name="cf_shape_5">하이브리드 빠른 롤 오프</string>
+    <string name="cf_shape_6">벽돌 벽</string>
     <string name="hifi_mode">HiFi 모드</string>
     <string name="hifi_mode_normal">기본</string>
     <string name="hifi_mode_him">높은 임피던스</string>
+    <string name="hifi_mode_aux-him">AUX 높은 임피던스</string>
     <string name="avc_volume">AVC 볼륨</string>
     <string name="avc_volume_summary">볼륨 증폭</string>
 </resources>

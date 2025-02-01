@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quad_dac_app_name">Панел на Quad DAC</string>
+    <string name="quad_dac">Hi-Fi Quad DAC</string>
+    <string name="quad_dac_on">Quad DAC е включен</string>
+    <string name="quad_dac_off">Quad DAC е изключен</string>
+    <string name="quad_dac_unavail">Quad DAC неналичен</string>
+    <string name="quad_dac_settings">Настройки на Quad DAC</string>
+    <string name="quad_dac_balance">Баланс</string>
+    <string name="quad_dac_balance_summary">Ляв / Десен канал баланс</string>
+    <string name="sound_preset">Предварителна настройка на звука</string>
+    <string name="sound_preset_normal">Нормално</string>
+    <string name="sound_preset_enhanced">Разширена</string>
+    <string name="sound_preset_detailed">Подробности</string>
+    <string name="sound_preset_live">На живо</string>
+    <string name="sound_preset_bass">Бас</string>
+    <string name="digital_filter">Цифров филтър</string>
+    <string name="digital_filter_0">Къс</string>
+    <string name="digital_filter_1">Остър</string>
+    <string name="digital_filter_2">Бавен</string>
+    <string name="digital_filter_3">Персонализиран филтър</string>
+    <string name="customizable_filter_settings">Настройки на персонализирания филтър</string>
+    <string name="cf_shape">Персонализиране формата на филтъра</string>
+    <string name="cf_shape_0">Бързо разгъване</string>
+    <string name="cf_shape_1">Бавно разгъване</string>
+    <string name="cf_shape_2">Бързо разгъване с минимална фаза</string>
+    <string name="cf_shape_3">Бавно разгъване с минимална фаза</string>
+    <string name="cf_shape_4">Аподизиращо бързо разгъване</string>
+    <string name="cf_shape_5">Хибридно бързо разгъване</string>
+    <string name="cf_shape_6">Тухлена стена</string>
+    <string name="cf_symmetry">Симетрия на персоналния филтър</string>
+    <string name="cf_symmetry_0">Синусова симетрия</string>
+    <string name="cf_symmetry_1">Косинусова симетрия</string>
+    <string name="customizable_filter_coeffs">Персонализирани коефициенти на филтъра</string>
+    <string name="customizable_filter_coeffs_summary">Забележка: Ако всички коефициенти са нула, звукът ще бъде изключен</string>
+    <string name="hifi_mode">HiFi режим</string>
+    <string name="hifi_mode_normal">Нормален</string>
+    <string name="hifi_mode_him">Високо Съпротивление</string>
+    <string name="hifi_mode_aux-him">AUX Висок импеданс</string>
+    <string name="avc_volume">AVC звук</string>
+    <string name="avc_volume_summary">Усилване на звука</string>
+</resources>

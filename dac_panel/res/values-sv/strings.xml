@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sound_preset_bass">Bas</string>
+    <string name="digital_filter_0">Kort</string>
+    <string name="digital_filter_1">Vass</string>
+    <string name="digital_filter_2">Långsam</string>
+    <string name="hifi_mode_normal">Normal</string>
+    <string name="avc_volume">AVC-volym</string>
+</resources>

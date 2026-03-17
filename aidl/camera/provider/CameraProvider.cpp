@@ -19,7 +19,9 @@
 #include <numeric>
 #include <regex>
 
-#define CAMERA_REMAP_IDS_PROPERTY "vendor.camera.remapid"
+namespace {
+constexpr const char* CAMERA_REMAP_IDS_PROPERTY = "vendor.camera.remapid";
+};  // namespace
 
 namespace android {
 namespace hardware {

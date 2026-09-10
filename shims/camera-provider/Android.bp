@@ -1,0 +1,33 @@
+// SPDX-FileCopyrightText: 2026 The LineageOS Project
+// SPDX-License-Identifier: Apache-2.0
+
+cc_binary {
+    name: "android.hardware.camera.provider@2.4-service.lge-shim",
+    srcs: ["service.cpp"],
+    init_rc: ["android.hardware.camera.provider@2.4-service.lge-shim.rc"],
+    shared_libs: [
+        "android.hardware.camera.common@1.0",
+        "android.hardware.camera.device@1.0",
+        "android.hardware.camera.device@3.2",
+        "android.hardware.camera.device@3.3",
+        "android.hardware.camera.device@3.4",
+        "android.hardware.camera.device@3.5",
+        "android.hardware.camera.provider@2.4",
+        "android.hardware.camera.provider@2.4-legacy",
+        "libbinder",
+        "libcamera_metadata",
+        "libcutils",
+        "libhardware",
+        "libhidlbase",
+        "liblog",
+        "libutils",
+    ],
+    static_libs: ["android.hardware.camera.common-helper"],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+    compile_multilib: "64",
+    proprietary: true,
+    relative_install_path: "hw",
+}

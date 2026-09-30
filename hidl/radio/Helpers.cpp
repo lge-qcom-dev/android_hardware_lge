@@ -63,7 +63,7 @@ hidl_vec<V1_4::CellInfo> Create1_4CellInfoList(const hidl_vec<V1_0::CellInfo>& c
     hidl_vec<V1_4::CellInfo> newCI;
     newCI.resize(cellInfo.size());
 
-    for (int x = 0; x < cellInfo.size(); ++x) {
+    for (size_t x = 0; x < cellInfo.size(); ++x) {
         newCI[x].isRegistered = cellInfo[x].registered;
         newCI[x].connectionStatus = (V1_2::CellConnectionStatus)INT_MAX;
         if (cellInfo[x].gsm.size() == 1) {
@@ -112,7 +112,7 @@ hidl_vec<V1_4::CellInfo> Create1_4CellInfoList(const hidl_vec<V1_2::CellInfo>& c
     hidl_vec<V1_4::CellInfo> newCI;
     newCI.resize(cellInfo.size());
 
-    for (int x = 0; x < cellInfo.size(); ++x) {
+    for (size_t x = 0; x < cellInfo.size(); ++x) {
         newCI[x].isRegistered = cellInfo[x].registered;
         newCI[x].connectionStatus = cellInfo[x].connectionStatus;
         if (cellInfo[x].gsm.size() == 1)

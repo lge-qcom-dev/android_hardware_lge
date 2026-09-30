@@ -38,3 +38,15 @@ cc_binary {
         "android.hidl.safe_union@1.0",
     ],
 }
+
+// Shared in-process LG backend, without a second published HIDL service.
+filegroup {
+    name: "lge-radio-wrapper-sources",
+    srcs: ["Radio.cpp", "RadioIndication.cpp", "RadioResponse.cpp", "Helpers.cpp",
+           "LgeRadioIndicationV2.cpp", "LgeRadioResponseV2.cpp", "hidl-utils.cpp"],
+}
+cc_library_headers {
+    name: "lge-radio-wrapper-headers",
+    vendor: true,
+    export_include_dirs: ["."],
+}

@@ -75,3 +75,5 @@
 
 # Sysfs - USB
 /sys/devices/platform/vendor/vendor:lge_usb_ds3/extcon/extcon5/cable.0(/.*)? u:object_r:sysfs_lge_usb:s0
+
+/(vendor|system/vendor)/bin/hw/android\.hardware\.radio-service\.lge    u:object_r:hal_radio_default_exec:s0

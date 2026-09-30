@@ -5,6 +5,7 @@
  */
 
 #include "LgeRadioIndicationV2.h"
+#include <android-base/logging.h>
 
 namespace vendor::lge::hardware::radio::implementation {
 
@@ -102,6 +103,10 @@ Return<void> LgeRadioIndicationV2::protocolInfoInd(RadioIndicationType type,
 
 Return<void> LgeRadioIndicationV2::dataQosChanged(RadioIndicationType type,
                                                   const LgeDataQosResponse& qosInfo) {
+    LOG(INFO) << "LG QoS: cid=" << qosInfo.cid << " qid=" << qosInfo.qid
+              << " status=" << qosInfo.status << " type=" << static_cast<int>(type)
+              << " tx=" << qosInfo.tx_flow_desc << " rx=" << qosInfo.rx_flow_desc
+              << " tx_tft=" << qosInfo.tx_tft << " rx_tft=" << qosInfo.rx_tft;
     return Void();
 }
 

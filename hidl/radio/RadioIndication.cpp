@@ -56,7 +56,7 @@ Return<void> RadioIndication::dataCallListChanged(
         V1_0::RadioIndicationType type, const hidl_vec<V1_0::SetupDataCallResult>& dcList) {
     hidl_vec<V1_4::SetupDataCallResult> newDcList;
     newDcList.resize(dcList.size());
-    for (int x = 0; x < dcList.size(); ++x) newDcList[x] = Create1_4SetupDataCallResult(dcList[x]);
+    for (size_t x = 0; x < dcList.size(); ++x) newDcList[x] = Create1_4SetupDataCallResult(dcList[x]);
     return mRealRadioIndication->dataCallListChanged_1_4(type, newDcList);
 }
 
@@ -266,7 +266,7 @@ Return<void> RadioIndication::currentPhysicalChannelConfigs(
         V1_0::RadioIndicationType type, const hidl_vec<V1_2::PhysicalChannelConfig>& configs) {
     hidl_vec<V1_4::PhysicalChannelConfig> newConfigs;
     newConfigs.resize(configs.size());
-    for (int x = 0; x < configs.size(); ++x) {
+    for (size_t x = 0; x < configs.size(); ++x) {
         newConfigs[x].base = configs[x];
         newConfigs[x].rat = V1_4::RadioTechnology::UNKNOWN;
         newConfigs[x].physicalCellId = -1;

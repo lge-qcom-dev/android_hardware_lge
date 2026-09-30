@@ -60,7 +60,7 @@ Return<void> RadioResponse::getCurrentCallsResponse(const V1_0::RadioResponseInf
     hidl_vec<V1_2::Call> newCalls;
     newCalls.resize(calls.size());
 
-    for (int x = 0; x < calls.size(); ++x) {
+    for (size_t x = 0; x < calls.size(); ++x) {
         newCalls[x].base = calls[x];
         newCalls[x].audioQuality = V1_2::AudioQuality::UNSPECIFIED;
     }
@@ -319,7 +319,7 @@ Return<void> RadioResponse::getDataCallListResponse(
     hidl_vec<V1_4::SetupDataCallResult> newResponse;
     newResponse.resize(dcResponse.size());
 
-    for (int x = 0; x < dcResponse.size(); ++x)
+    for (size_t x = 0; x < dcResponse.size(); ++x)
         newResponse[x] = Create1_4SetupDataCallResult(dcResponse[x]);
 
     return mRealRadioResponse->getDataCallListResponse_1_4(info, newResponse);

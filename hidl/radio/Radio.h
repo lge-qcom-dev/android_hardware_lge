@@ -35,7 +35,9 @@ using vendor::lge::hardware::radio::V2_0::ILgeRadioResponseV2;
 
 struct Radio : public V1_5::IRadio {
   public:
-    Radio(sp<V1_0::IRadio> realRadio, int slotId);
+    Radio(sp<V1_0::IRadio> realRadio, int slotId,
+          sp<RadioResponse> response = new RadioResponse(),
+          sp<RadioIndication> indication = new RadioIndication());
 
     // Methods from ::android::hardware::radio::V1_0::IRadio follow.
     Return<void> setResponseFunctions(const sp<V1_0::IRadioResponse>& radioResponse,
@@ -311,8 +313,8 @@ struct Radio : public V1_5::IRadio {
   private:
     int mSlotId;
     sp<V1_0::IRadio> mRealRadio;
-    sp<RadioResponse> mRadioResponse = new RadioResponse();
-    sp<RadioIndication> mRadioIndication = new RadioIndication();
+    sp<RadioResponse> mRadioResponse;
+    sp<RadioIndication> mRadioIndication;
     sp<LgeRadioResponseV2> mLgeRadioResponse;
     sp<LgeRadioIndicationV2> mLgeRadioIndication;
 

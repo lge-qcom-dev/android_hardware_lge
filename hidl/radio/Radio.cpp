@@ -64,7 +64,11 @@
 
 namespace android::hardware::radio::implementation {
 
-Radio::Radio(sp<V1_0::IRadio> realRadio, int slotId) : mRealRadio(realRadio) {
+Radio::Radio(sp<V1_0::IRadio> realRadio, int slotId, sp<RadioResponse> response,
+             sp<RadioIndication> indication)
+    : mRealRadio(realRadio), mRadioResponse(response), mRadioIndication(indication) {
+    CHECK(mRadioResponse);
+    CHECK(mRadioIndication);
     mSlotId = slotId;
 }
 
@@ -80,7 +84,11 @@ Return<void> Radio::setResponseFunctions(const sp<V1_0::IRadioResponse>& radioRe
     mLgeRadioIndication = new LgeRadioIndicationV2(
             V1_4::IRadioIndication::castFrom(radioIndication).withDefault(nullptr));
     auto svc = ILgeRadio::getService("lge_radio" + (mSlotId != 1 ? std::to_string(mSlotId) : ""));
-    svc->setResponseFunctions(mLgeRadioResponse, mLgeRadioIndication);
+    if (svc == nullptr) {
+        LOG(ERROR) << "LG radio extension unavailable for slot " << mSlotId;
+    } else {
+        svc->setResponseFunctions(mLgeRadioResponse, mLgeRadioIndication).assertOk();
+    }
 
     // Finally, set up radio
     WRAP_V1_0_CALL(setResponseFunctions, mRadioResponse, mRadioIndication);

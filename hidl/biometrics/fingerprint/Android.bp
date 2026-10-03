@@ -1,3 +1,9 @@
+cc_library_headers {
+    name: "liblge_fingerprint_headers",
+    vendor_available: true,
+    export_include_dirs: ["."],
+}
+
 soong_config_module_type {
     name: "lge_fingerprint_service_cc_defaults",
     module_type: "cc_defaults",

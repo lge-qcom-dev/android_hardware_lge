@@ -1,5 +1,10 @@
 rw_dir_file(hal_fingerprint_default,sysfs_lge_touch)
 
+# Keep HAL-created storage consistent with vold's per-user fpdata label.
+allow hal_fingerprint_default vendor_data_file:dir { write add_name };
+type_transition hal_fingerprint_default vendor_data_file:dir fingerprint_vendor_data_file "fpdata";
+allow hal_fingerprint_default fingerprint_vendor_data_file:dir create;
+
 allow hal_fingerprint_default fingerprint_device:chr_file rw_file_perms;
 allow hal_fingerprint_default tee_device:chr_file rw_file_perms;
 allow hal_fingerprint_default self:netlink_socket { read write bind create };

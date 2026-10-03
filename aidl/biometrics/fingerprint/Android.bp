@@ -1,0 +1,57 @@
+// SPDX-FileCopyrightText: 2026 The LineageOS Project
+// SPDX-License-Identifier: Apache-2.0
+
+cc_binary {
+    name: "android.hardware.biometrics.fingerprint-service.lge",
+    vendor: true,
+    compile_multilib: "64",
+    relative_install_path: "hw",
+    init_rc: ["android.hardware.biometrics.fingerprint-service.lge.rc"],
+    vintf_fragments: ["android.hardware.biometrics.fingerprint-service.lge.xml"],
+    srcs: [
+        "Config.cpp",
+        "Fingerprint.cpp",
+        "Illumination.cpp",
+        "LegacyHal.cpp",
+        "Session.cpp",
+        "Worker.cpp",
+        "service.cpp",
+    ],
+    header_libs: ["liblge_fingerprint_headers"],
+    cflags: [
+        "-DLGE_EGISTEC_UDFPS",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ] + select(soong_config_variable("lge_udfps", "sensor_x"), {
+        any @ value: ["-DLGE_UDFPS_SENSOR_X=" + value],
+        default: ["-DLGE_UDFPS_SENSOR_X=-1"],
+    }) + select(soong_config_variable("lge_udfps", "sensor_y"), {
+        any @ value: ["-DLGE_UDFPS_SENSOR_Y=" + value],
+        default: ["-DLGE_UDFPS_SENSOR_Y=-1"],
+    }) + select(soong_config_variable("lge_udfps", "sensor_radius"), {
+        any @ value: ["-DLGE_UDFPS_SENSOR_RADIUS=" + value],
+        default: ["-DLGE_UDFPS_SENSOR_RADIUS=0"],
+    }) + select(soong_config_variable("lge_udfps", "managed_sequence"), {
+        true: ["-DLGE_UDFPS_MANAGED_SEQUENCE=1"],
+        default: ["-DLGE_UDFPS_MANAGED_SEQUENCE=0"],
+    }) + select(soong_config_variable("lge_udfps", "local_illumination"), {
+        true: ["-DLGE_UDFPS_LOCAL_ILLUMINATION=1"],
+        default: ["-DLGE_UDFPS_LOCAL_ILLUMINATION=0"],
+    }) + select(soong_config_variable("lge_udfps", "panel_path"), {
+        any @ path: ["-DLGE_UDFPS_PANEL_PATH=\"" + path + "\""],
+        default: ["-DLGE_UDFPS_PANEL_PATH=\"/sys/devices/virtual/panel/panel-0/brightness/fp_lhbm\""],
+    }) + select(soong_config_variable("lge_udfps", "touch_reset_path"), {
+        any @ path: ["-DLGE_UDFPS_TOUCH_RESET_PATH=\"" + path + "\""],
+        default: ["-DLGE_UDFPS_TOUCH_RESET_PATH=\"/sys/devices/virtual/input/lge_touch/reset_ctrl\""],
+    }),
+    cpp_std: "c++20",
+    shared_libs: [
+        "libbase",
+        "libbinder_ndk",
+        "libhardware",
+        "liblog",
+        "android.hardware.biometrics.fingerprint-V4-ndk",
+        "android.hardware.biometrics.common-V4-ndk",
+    ],
+}

@@ -129,8 +129,7 @@ ndk::ScopedAStatus Session::authenticate(int64_t operationId,
     if (rc != 0) {
         if (rc == 4) {
             mCb->onError(Error::HW_UNAVAILABLE, rc);
-        }
-        else
+        } else
             mCb->onError(Error::CANCELED, rc);
     }
 
@@ -162,8 +161,7 @@ ndk::ScopedAStatus Session::enumerateEnrollments() {
         return ndk::ScopedAStatus::fromServiceSpecificError(rc);
     }
 
-    for(size_t i = 0; i < 5; i++)
-        callbackFids.push_back(static_cast<int32_t>(fids[i]));
+    for (size_t i = 0; i < 5; i++) callbackFids.push_back(static_cast<int32_t>(fids[i]));
 
     mCb->onEnrollmentsEnumerated(callbackFids);
 
@@ -399,7 +397,7 @@ void Session::lockoutTimerExpired() {
 }
 
 void Session::notify(uint32_t eventId, uint32_t value1, uint32_t value2, void* buffer,
-                                   uint32_t buffer_size) {
+                     uint32_t buffer_size) {
     switch (eventId) {
         // Error
         case 0x3eb:

@@ -36,7 +36,7 @@ class Fingerprint : public BnFingerprint {
     rbs_fingerprint_device_t* openHal(void);
     std::vector<SensorLocation> getSensorLocations();
     static void notify(uint32_t eventId, uint32_t value1, uint32_t value2, void* buffer,
-                                   uint32_t buffer_size);
+                       uint32_t buffer_size);
 
     std::shared_ptr<FingerprintConfig> mConfig;
     std::shared_ptr<Session> mSession;

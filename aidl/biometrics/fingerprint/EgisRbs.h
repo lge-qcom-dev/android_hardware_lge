@@ -5,21 +5,23 @@
 
 #pragma once
 
-#include <stdint.h>
 #include <hardware/hw_auth_token.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct QSEECom_handle { unsigned char* ion_sbuffer; };
+struct QSEECom_handle {
+    unsigned char* ion_sbuffer;
+};
 
-struct ets_masterkey_response {
-    uint32_t rc;
+typedef struct ets_masterkey_response {
+    int32_t rc;
     uint32_t pad;
     uint32_t size;
     uint32_t masterkey[256];
-};
+} __attribute((packed)) ets_masterkey_response_t;
 
 #define RBS_CUSTOM_INI_PATH_SIZE 0x1000
 
@@ -47,7 +49,7 @@ typedef struct rbs_fingerprint_device {
     char* g_custom_ini_path;
 } rbs_fingerprint_device_t;
 
-rbs_fingerprint_device_t *RBS_LoadLibrary(void);
+rbs_fingerprint_device_t* RBS_LoadLibrary(void);
 int RBS_GetSecureKey(void* masterkey, uint32_t size);
 
 #ifdef __cplusplus

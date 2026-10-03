@@ -107,7 +107,7 @@ std::vector<SensorLocation> Fingerprint::getSensorLocations() {
 }
 
 void Fingerprint::notify(uint32_t eventId, uint32_t value1, uint32_t value2, void* buffer,
-                                   uint32_t buffer_size) {
+                         uint32_t buffer_size) {
     Fingerprint* thisPtr = sInstance;
     if (thisPtr == nullptr || thisPtr->mSession == nullptr || thisPtr->mSession->isClosed()) {
         ALOGE("Receiving callbacks before a session is opened.");

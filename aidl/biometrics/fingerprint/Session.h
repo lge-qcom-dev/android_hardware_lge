@@ -13,8 +13,8 @@
 #include <hardware/hardware.h>
 #include <log/log.h>
 
-#include "LockoutTracker.h"
 #include "EgisRbs.h"
+#include "LockoutTracker.h"
 
 using ::aidl::android::hardware::biometrics::common::ICancellationSignal;
 using ::aidl::android::hardware::biometrics::common::OperationContext;
@@ -63,7 +63,7 @@ class Session : public BnSession {
     binder_status_t linkToDeath(AIBinder* binder);
     bool isClosed();
     void notify(uint32_t eventId, uint32_t value1, uint32_t value2, void* buffer,
-                                   uint32_t buffer_size);
+                uint32_t buffer_size);
 
   private:
     rbs_fingerprint_device_t* mDevice;

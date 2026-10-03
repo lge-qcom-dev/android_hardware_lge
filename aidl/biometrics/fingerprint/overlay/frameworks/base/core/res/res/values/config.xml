@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-FileCopyrightText: 2026 The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0 -->
+<resources>
+    <!-- AIDL sensors are discovered through VINTF. A legacy fingerprint entry
+         makes AuthService select the HIDL adapter for the AIDL provider too. -->
+    <string-array name="config_biometric_sensors" translatable="false" />
+    <!-- UdfpsHelper needs explicit floats. Preserve the legacy minimum of 10
+         using BrightnessSynchronizer's (value - 1) / 254 conversion. Zero can
+         fall outside a panel's existing nits/backlight map and prevent boot. -->
+    <item name="config_screenBrightnessSettingMinimumFloat" format="float" type="dimen">0.035433073</item>
+    <item name="config_screenBrightnessSettingMaximumFloat" format="float" type="dimen">1.0</item>
+</resources>

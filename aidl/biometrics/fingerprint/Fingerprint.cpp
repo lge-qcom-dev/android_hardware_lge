@@ -189,7 +189,7 @@ ndk::ScopedAStatus Fingerprint::createSession(int32_t /*sensorId*/, int32_t user
             mDevice, userId, cb, mLockoutTracker,
             (mSensorType == FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC ||
              mSensorType == FingerprintSensorType::UNDER_DISPLAY_OPTICAL),
-            mConfig->get<bool>("has_touch_reset_ctrl"));
+            mConfig->get<bool>("managed_sequence"), mConfig->get<bool>("has_touch_reset_ctrl"));
     *out = mSession;
 
     mSession->linkToDeath(cb->asBinder().get());

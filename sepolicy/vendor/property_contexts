@@ -10,6 +10,9 @@ vendor.lge.audio.hifi_rec.                       u:object_r:vendor_audio_prop:s0
 vendor.lge.fm_gain_control_headset               u:object_r:vendor_audio_prop:s0
 vendor.lge.fm_gain_control_speaker               u:object_r:vendor_audio_prop:s0
 
+# Fingerprint
+persist.vendor.fingerprint. u:object_r:vendor_lge_fingerprint_prop:s0
+
 # FM
 vendor.hw.fm.version u:object_r:vendor_fm_prop:s0
 

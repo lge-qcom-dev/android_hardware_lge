@@ -59,3 +59,12 @@ prop {
     access: ReadWrite
     api_name: "detect_interaction"
 }
+
+# panel sequence with explicit READY and bypass ON/OFF (default: false)
+prop {
+    prop_name: "persist.vendor.fingerprint.managed_sequence"
+    type: Boolean
+    scope: Internal
+    access: ReadWrite
+    api_name: "managed_sequence"
+}

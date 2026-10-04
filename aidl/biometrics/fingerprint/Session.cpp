@@ -14,8 +14,10 @@
 
 #include "CancellationSignal.h"
 
-static inline void setFodHbm(std::string path, bool status) {
-    android::base::WriteStringToFile(status ? "1" : "0", path);
+static inline void setFodHbm(const std::string& path, int mode) {
+    if (!android::base::WriteStringToFile(std::to_string(mode), path)) {
+        ALOGE("Failed to set fingerprint panel mode %d", mode);
+    }
 }
 
 static inline void resetLgeTouchPanel(void) {
@@ -33,12 +35,13 @@ void onClientDeath(void* cookie) {
 }
 
 Session::Session(fingerprint_device_t* device, int userId, std::shared_ptr<ISessionCallback> cb,
-                 LockoutTracker lockoutTracker, bool isUdfps)
+                 LockoutTracker lockoutTracker, bool isUdfps, bool managedSequence)
     : mDevice(device),
       mLockoutTracker(lockoutTracker),
       mUserId(userId),
       mCb(cb),
-      mIsUdfps(isUdfps) {
+      mIsUdfps(isUdfps),
+      mManagedSequence(managedSequence) {
     mDeathRecipient = AIBinder_DeathRecipient_new(onClientDeath);
 
     if (mIsUdfps) {
@@ -50,6 +53,8 @@ Session::Session(fingerprint_device_t* device, int userId, std::shared_ptr<ISess
             mHbmPath = "/dev/null";  // avoid any possible null deref
     } else
         mHbmPath = "/dev/null";  // avoid any possible null deref
+
+    if (mIsUdfps) setFodHbm(mHbmPath, 3);
 
     auto path = std::format("/data/vendor_de/{}/fpdata/", userId);
     mDevice->set_active_group(mDevice, mUserId, path.c_str());
@@ -75,8 +80,10 @@ ndk::ScopedAStatus Session::enroll(const HardwareAuthToken& hat,
                                    std::shared_ptr<ICancellationSignal>* out) {
     hw_auth_token_t authToken;
     translate(hat, authToken);
+    enableHighBrightFod();
     int error = mDevice->enroll(mDevice, &authToken, mUserId, 60);
     if (error) {
+        disableHighBrightFod();
         ALOGE("enroll failed: %d", error);
         mCb->onError(Error::UNABLE_TO_PROCESS, error);
     }
@@ -87,14 +94,16 @@ ndk::ScopedAStatus Session::enroll(const HardwareAuthToken& hat,
 
 ndk::ScopedAStatus Session::authenticate(int64_t operationId,
                                          std::shared_ptr<ICancellationSignal>* out) {
-    checkSensorLockout();
+    *out = SharedRefBase::make<CancellationSignal>(this);
+    if (checkSensorLockout()) return ndk::ScopedAStatus::ok();
+    enableHighBrightFod();
     int error = mDevice->authenticate(mDevice, operationId, mUserId);
     if (error) {
+        disableHighBrightFod();
         ALOGE("authenticate failed: %d", error);
         mCb->onError(Error::UNABLE_TO_PROCESS, error);
     }
 
-    *out = SharedRefBase::make<CancellationSignal>(this);
     return ndk::ScopedAStatus::ok();
 }
 
@@ -154,11 +163,14 @@ ndk::ScopedAStatus Session::onPointerDown(int32_t /*pointerId*/, int32_t /*x*/, 
 
     if (!mIsUdfps) return ndk::ScopedAStatus::ok();
 
-    if (mAuthSuccess) return ndk::ScopedAStatus::ok();
-
+    std::lock_guard lock(mFodMutex);
+    if (!mFodRequested) return ndk::ScopedAStatus::ok();
+    if (!mFodPrepared) {
+        setFodHbm(mHbmPath, 2);
+        mFodPrepared = true;
+    }
+    setFodHbm(mHbmPath, mManagedSequence ? 11 : 1);
     mDevice->do_extra_api_in(FINGERPRINT_LGE_SCAN_START, &param);
-
-    setFodHbm(mHbmPath, true);
 
     return ndk::ScopedAStatus::ok();
 }
@@ -168,10 +180,15 @@ ndk::ScopedAStatus Session::onPointerUp(int32_t /*pointerId*/) {
 
     if (!mIsUdfps) return ndk::ScopedAStatus::ok();
 
-    mDevice->do_extra_api_in(FINGERPRINT_LGE_SCAN_STOP, &param);
-
-    setFodHbm(mHbmPath, false);
-    resetLgeTouchPanel();
+    std::lock_guard lock(mFodMutex);
+    mAcquiredGood = false;
+    if (!mDisplayActive) {
+        restoreFod();
+    } else if (mFodPrepared) {
+        mDevice->do_extra_api_in(FINGERPRINT_LGE_SCAN_STOP, &param);
+        setFodHbm(mHbmPath, mManagedSequence ? 10 : 0);
+        resetLgeTouchPanel();
+    }
 
     return ndk::ScopedAStatus::ok();
 }
@@ -183,14 +200,16 @@ ndk::ScopedAStatus Session::onUiReady() {
 }
 
 ndk::ScopedAStatus Session::authenticateWithContext(
-        int64_t operationId, const common::OperationContext& /*context*/,
+        int64_t operationId, const common::OperationContext& context,
         std::shared_ptr<common::ICancellationSignal>* out) {
+    onContextChanged(context);
     return authenticate(operationId, out);
 }
 
 ndk::ScopedAStatus Session::enrollWithContext(const keymaster::HardwareAuthToken& hat,
-                                              const common::OperationContext& /*context*/,
+                                              const common::OperationContext& context,
                                               std::shared_ptr<common::ICancellationSignal>* out) {
+    onContextChanged(context);
     return enroll(hat, out);
 }
 
@@ -208,12 +227,23 @@ ndk::ScopedAStatus Session::onPointerUpWithContext(const PointerContext& context
     return onPointerUp(context.pointerId);
 }
 
-ndk::ScopedAStatus Session::onContextChanged(const common::OperationContext& /*context*/) {
+ndk::ScopedAStatus Session::onContextChanged(const common::OperationContext& context) {
+    if (!mIsUdfps) return ndk::ScopedAStatus::ok();
+    std::lock_guard lock(mFodMutex);
+    mDisplayActive = !context.isAod && context.displayState != common::DisplayState::AOD &&
+                     context.displayState != common::DisplayState::NO_UI;
+    // READY suppresses normal backlight writes, so it must not span display sleep.
+    if (!mDisplayActive) {
+        restoreFod();
+    } else if (mFodRequested && !mFodPrepared) {
+        setFodHbm(mHbmPath, 2);
+        mFodPrepared = true;
+    }
     return ndk::ScopedAStatus::ok();
 }
 
-ndk::ScopedAStatus Session::onPointerCancelWithContext(const PointerContext& /*context*/) {
-    return ndk::ScopedAStatus::ok();
+ndk::ScopedAStatus Session::onPointerCancelWithContext(const PointerContext& context) {
+    return onPointerUp(context.pointerId);
 }
 
 ndk::ScopedAStatus Session::setIgnoreDisplayTouches(bool /*shouldIgnore*/) {
@@ -221,6 +251,7 @@ ndk::ScopedAStatus Session::setIgnoreDisplayTouches(bool /*shouldIgnore*/) {
 }
 
 ndk::ScopedAStatus Session::cancel() {
+    disableHighBrightFod();
     int ret = mDevice->cancel(mDevice);
 
     if (ret == 0) {
@@ -232,6 +263,7 @@ ndk::ScopedAStatus Session::cancel() {
 }
 
 ndk::ScopedAStatus Session::close() {
+    disableHighBrightFod();
     mClosed = true;
     mCb->onSessionClosed();
     AIBinder_DeathRecipient_delete(mDeathRecipient);
@@ -311,6 +343,7 @@ AcquiredInfo Session::VendorAcquiredFilter(int32_t info, int32_t* vendorCode) {
 bool Session::checkSensorLockout() {
     LockoutTracker::LockoutMode lockoutMode = mLockoutTracker.getMode();
     if (lockoutMode == LockoutTracker::LockoutMode::kPermanent) {
+        disableHighBrightFod();
         ALOGE("Fail: lockout permanent");
         mCb->onLockoutPermanent();
         mIsLockoutTimerAborted = true;
@@ -318,6 +351,7 @@ bool Session::checkSensorLockout() {
     }
     if (lockoutMode == LockoutTracker::LockoutMode::kTimed) {
         int64_t timeLeft = mLockoutTracker.getLockoutTimeLeft();
+        disableHighBrightFod();
         ALOGE("Fail: lockout timed: %ld", timeLeft);
         mCb->onLockoutTimed(timeLeft);
         if (!mIsLockoutTimerStarted) startLockoutTimer(timeLeft);
@@ -352,6 +386,7 @@ void Session::notify(const fingerprint_msg_t* msg) {
     // const uint64_t devId = reinterpret_cast<uint64_t>(mDevice);
     switch (msg->type) {
         case FINGERPRINT_ERROR: {
+            disableHighBrightFod();
             int32_t vendorCode = 0;
             Error result = VendorErrorFilter(msg->data.error, &vendorCode);
             ALOGD("onError(%hhd, %d)", result, vendorCode);
@@ -366,6 +401,9 @@ void Session::notify(const fingerprint_msg_t* msg) {
             if (mIsUdfps) {
                 switch (result) {
                     case AcquiredInfo::GOOD:
+                        // Egis may need more frames; GOOD removes framework illumination.
+                        mAcquiredGood = true;
+                        return;
                     case AcquiredInfo::PARTIAL:
                     case AcquiredInfo::INSUFFICIENT:
                     case AcquiredInfo::SENSOR_DIRTY:
@@ -384,6 +422,9 @@ void Session::notify(const fingerprint_msg_t* msg) {
             mCb->onAcquired(result, vendorCode);
         } break;
         case FINGERPRINT_TEMPLATE_ENROLLING: {
+            reportAcquiredGood();
+            onPointerUp(0);
+            if (msg->data.enroll.samples_remaining == 0) disableHighBrightFod();
             ALOGD("onEnrollResult(fid=%d, gid=%d, rem=%d)", msg->data.enroll.finger.fid,
                   msg->data.enroll.finger.gid, msg->data.enroll.samples_remaining);
             mCb->onEnrollmentProgress(msg->data.enroll.finger.fid,
@@ -405,18 +446,17 @@ void Session::notify(const fingerprint_msg_t* msg) {
                 translate(hat, authToken);
 
                 if (mIsUdfps) {
-                    mAuthSuccess = true;
-                    onPointerUp(0);
-                    std::thread([this]() {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                        mAuthSuccess = false;
-                    }).detach();
+                    reportAcquiredGood();
+                    disableHighBrightFod();
                 }
 
                 mCb->onAuthenticationSucceeded(msg->data.authenticated.finger.fid, authToken);
                 mLockoutTracker.reset(true);
             } else {
-                if (mIsUdfps) onPointerUp(0);
+                if (mIsUdfps) {
+                    reportAcquiredGood();
+                    onPointerUp(0);
+                }
 
                 mCb->onAuthenticationFailed();
                 mLockoutTracker.addFailedAttempt();
@@ -436,8 +476,37 @@ void Session::notify(const fingerprint_msg_t* msg) {
     }
 }
 
-void Session::disableHighBrightFod() {}
+void Session::enableHighBrightFod() {
+    if (!mIsUdfps) return;
+    std::lock_guard lock(mFodMutex);
+    mFodRequested = true;
+    if (mDisplayActive && !mFodPrepared) {
+        setFodHbm(mHbmPath, 2);
+        mFodPrepared = true;
+    }
+}
 
-void Session::enableHighBrightFod() {}
+void Session::disableHighBrightFod() {
+    if (!mIsUdfps) return;
+    std::lock_guard lock(mFodMutex);
+    mFodRequested = false;
+    restoreFod();
+}
+
+// Called with mFodMutex held; retain the request when restoring for display sleep.
+void Session::restoreFod() {
+    mAcquiredGood = false;
+    if (!mFodPrepared) return;
+    uint32_t param = 0;
+    mDevice->do_extra_api_in(FINGERPRINT_LGE_SCAN_STOP, &param);
+    setFodHbm(mHbmPath, mManagedSequence ? 10 : 0);
+    resetLgeTouchPanel();
+    setFodHbm(mHbmPath, 3);
+    mFodPrepared = false;
+}
+
+void Session::reportAcquiredGood() {
+    if (mAcquiredGood.exchange(false)) mCb->onAcquired(AcquiredInfo::GOOD, 0);
+}
 
 }  // namespace aidl::android::hardware::biometrics::fingerprint

@@ -188,7 +188,8 @@ ndk::ScopedAStatus Fingerprint::createSession(int32_t /*sensorId*/, int32_t user
     mSession = SharedRefBase::make<Session>(
             mDevice, userId, cb, mLockoutTracker,
             (mSensorType == FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC ||
-             mSensorType == FingerprintSensorType::UNDER_DISPLAY_OPTICAL));
+             mSensorType == FingerprintSensorType::UNDER_DISPLAY_OPTICAL),
+            mConfig->get<bool>("managed_sequence"));
     *out = mSession;
 
     mSession->linkToDeath(cb->asBinder().get());

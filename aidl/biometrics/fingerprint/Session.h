@@ -7,6 +7,9 @@
 #pragma once
 #define LOG_TAG "android.hardware.biometrics.fingerprint-service.lineage"
 
+#include <atomic>
+#include <mutex>
+
 #include <aidl/android/hardware/biometrics/fingerprint/BnSession.h>
 #include <aidl/android/hardware/biometrics/fingerprint/ISessionCallback.h>
 #include <android/log.h>
@@ -32,7 +35,7 @@ void onClientDeath(void* cookie);
 class Session : public BnSession {
   public:
     Session(fingerprint_device_t* device, int userId, std::shared_ptr<ISessionCallback> cb,
-            LockoutTracker lockoutTracker, bool isUdfps);
+            LockoutTracker lockoutTracker, bool isUdfps, bool managedSequence);
     ndk::ScopedAStatus generateChallenge() override;
     ndk::ScopedAStatus revokeChallenge(int64_t challenge) override;
     ndk::ScopedAStatus enroll(const HardwareAuthToken& hat,
@@ -102,7 +105,14 @@ class Session : public BnSession {
     void disableHighBrightFod(void);
     void enableHighBrightFod(void);
     std::string mHbmPath;
-    bool mAuthSuccess = false;
+    const bool mManagedSequence;
+    std::mutex mFodMutex;
+    bool mFodRequested = false;
+    bool mDisplayActive = true;
+    bool mFodPrepared = false;
+    std::atomic<bool> mAcquiredGood = false;
+    void restoreFod();
+    void reportAcquiredGood();
 };
 
 }  // namespace aidl::android::hardware::biometrics::fingerprint

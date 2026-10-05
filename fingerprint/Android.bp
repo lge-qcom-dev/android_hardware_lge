@@ -1,0 +1,10 @@
+cc_library_static {
+    name: "libudfps_extension.lge",
+    srcs: ["UdfpsExtension.cpp"],
+    include_dirs: ["frameworks/native/services/surfaceflinger/CompositionEngine/include"],
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ],
+}

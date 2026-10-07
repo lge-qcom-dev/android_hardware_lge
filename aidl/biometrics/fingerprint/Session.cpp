@@ -466,8 +466,10 @@ void Session::setFpLhbmState(int mode) {
 }
 
 void Session::setTouchResetCtrl(int command) {
-    if (mHasTouchResetCtrl)
-        ::android::base::WriteStringToFile(std::to_string(command), LGE_TOUCH_RESET_PATH);
+    if (mHasTouchResetCtrl &&
+        !::android::base::WriteStringToFile(std::to_string(command), LGE_TOUCH_RESET_PATH)) {
+        ALOGE("Failed to reset fingerprint touch panel with command %d: %m", command);
+    }
 }
 
 void Session::requestFod() {

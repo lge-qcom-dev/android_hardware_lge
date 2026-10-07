@@ -130,15 +130,14 @@ class Session : public BnSession {
     std::string mHbmPath;
     std::mutex mFodMutex;
     bool mFodRequested = false;
-    bool mDisplayActive = true;
-    bool mFodPrepared = false;
+    bool mFodActive = false;
     std::atomic<bool> mAcquiredGood = false;
     void setFpLhbmState(int mode);
     void setTouchResetCtrl(int command);
     void restoreFod();
     void reportAcquiredGood();
     void setUdfpsExitState(void);
-    void setUdfpsReadyState(void);
+    void requestFod();
 };
 
 }  // namespace aidl::android::hardware::biometrics::fingerprint

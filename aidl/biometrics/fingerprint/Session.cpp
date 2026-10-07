@@ -72,7 +72,7 @@ ndk::ScopedAStatus Session::enroll(const HardwareAuthToken& hat,
                                    std::shared_ptr<ICancellationSignal>* out) {
     hw_auth_token_t authToken;
     translate(hat, authToken);
-    setUdfpsReadyState();
+    requestFod();
     int error = mDevice->enroll(mDevice, &authToken, mUserId, 60);
     if (error) {
         setUdfpsExitState();
@@ -88,7 +88,7 @@ ndk::ScopedAStatus Session::authenticate(int64_t operationId,
                                          std::shared_ptr<ICancellationSignal>* out) {
     *out = SharedRefBase::make<CancellationSignal>(this);
     if (checkSensorLockout()) return ndk::ScopedAStatus::ok();
-    setUdfpsReadyState();
+    requestFod();
     int error = mDevice->authenticate(mDevice, operationId, mUserId);
     if (error) {
         setUdfpsExitState();
@@ -156,11 +156,10 @@ ndk::ScopedAStatus Session::onPointerDown(int32_t /*pointerId*/, int32_t /*x*/, 
     if (!mIsUdfps) return ndk::ScopedAStatus::ok();
 
     std::lock_guard lock(mFodMutex);
-    if (!mFodRequested) return ndk::ScopedAStatus::ok();
-    if (!mFodPrepared) {
-        setFpLhbmState(FP_LHBM_READY);
-        mFodPrepared = true;
-    }
+    if (!mFodRequested || mFodActive) return ndk::ScopedAStatus::ok();
+    // READY blocks normal backlight writes; keep it confined to an actual scan.
+    setFpLhbmState(FP_LHBM_READY);
+    mFodActive = true;
     setFpLhbmState(mManagedSequence ? FP_LHBM_SM_ON : FP_LHBM_ON);
     mDevice->do_extra_api_in(FINGERPRINT_LGE_SCAN_START, &param);
 
@@ -168,19 +167,10 @@ ndk::ScopedAStatus Session::onPointerDown(int32_t /*pointerId*/, int32_t /*x*/, 
 }
 
 ndk::ScopedAStatus Session::onPointerUp(int32_t /*pointerId*/) {
-    uint32_t param = 0;
-
     if (!mIsUdfps) return ndk::ScopedAStatus::ok();
 
     std::lock_guard lock(mFodMutex);
-    mAcquiredGood = false;
-    if (!mDisplayActive) {
-        restoreFod();
-    } else if (mFodPrepared) {
-        mDevice->do_extra_api_in(FINGERPRINT_LGE_SCAN_STOP, &param);
-        setFpLhbmState(mManagedSequence ? FP_LHBM_SM_OFF : FP_LHBM_OFF);
-        setTouchResetCtrl(PANEL_HW_RESET_POWER);
-    }
+    restoreFod();
 
     return ndk::ScopedAStatus::ok();
 }
@@ -222,14 +212,10 @@ ndk::ScopedAStatus Session::onPointerUpWithContext(const PointerContext& context
 ndk::ScopedAStatus Session::onContextChanged(const common::OperationContext& context) {
     if (!mIsUdfps) return ndk::ScopedAStatus::ok();
     std::lock_guard lock(mFodMutex);
-    mDisplayActive = !context.isAod && context.displayState != common::DisplayState::AOD &&
-                     context.displayState != common::DisplayState::NO_UI;
-    // READY suppresses normal backlight writes, so it must not span display sleep.
-    if (!mDisplayActive) {
+    // Release an interrupted scan on sleep, but never prepare one just for waking.
+    if (context.isAod || context.displayState == common::DisplayState::AOD ||
+        context.displayState == common::DisplayState::NO_UI) {
         restoreFod();
-    } else if (mFodRequested && !mFodPrepared) {
-        setFpLhbmState(FP_LHBM_READY);
-        mFodPrepared = true;
     }
     return ndk::ScopedAStatus::ok();
 }
@@ -479,14 +465,10 @@ void Session::setTouchResetCtrl(int command) {
         ::android::base::WriteStringToFile(std::to_string(command), LGE_TOUCH_RESET_PATH);
 }
 
-void Session::setUdfpsReadyState() {
+void Session::requestFod() {
     if (!mIsUdfps) return;
     std::lock_guard lock(mFodMutex);
     mFodRequested = true;
-    if (mDisplayActive && !mFodPrepared) {
-        setFpLhbmState(FP_LHBM_READY);
-        mFodPrepared = true;
-    }
 }
 
 void Session::setUdfpsExitState() {
@@ -499,13 +481,13 @@ void Session::setUdfpsExitState() {
 // Called with mFodMutex held; retain the request when restoring for display sleep.
 void Session::restoreFod() {
     mAcquiredGood = false;
-    if (!mFodPrepared) return;
+    if (!mFodActive) return;
     uint32_t param = 0;
     mDevice->do_extra_api_in(FINGERPRINT_LGE_SCAN_STOP, &param);
     setFpLhbmState(mManagedSequence ? FP_LHBM_SM_OFF : FP_LHBM_OFF);
-    setTouchResetCtrl(PANEL_HW_RESET_POWER);
     setFpLhbmState(FP_LHBM_EXIT);
-    mFodPrepared = false;
+    setTouchResetCtrl(PANEL_HW_RESET_POWER);
+    mFodActive = false;
 }
 
 void Session::reportAcquiredGood() {

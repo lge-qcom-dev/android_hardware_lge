@@ -5,18 +5,17 @@
  */
 
 #pragma once
-#define LOG_TAG "android.hardware.biometrics.fingerprint-service.lineage"
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 
 #include <aidl/android/hardware/biometrics/fingerprint/BnSession.h>
 #include <aidl/android/hardware/biometrics/fingerprint/ISessionCallback.h>
-#include <android/log.h>
 #include <hardware/fingerprint.h>
 #include <hardware/hardware.h>
-#include <log/log.h>
 
+#include "FodDimming.h"
 #include "LockoutTracker.h"
 
 #define LGE_FP_LHBM_LEGACY_PATH "/sys/devices/virtual/panel/brightness/fp_lhbm"
@@ -58,7 +57,7 @@ class Session : public BnSession {
   public:
     Session(fingerprint_device_t* device, int userId, std::shared_ptr<ISessionCallback> cb,
             LockoutTracker lockoutTracker, bool isUdfps, bool managedSequence,
-            bool hasTouchResetCtrl);
+            bool hasTouchResetCtrl, std::unique_ptr<FodDimming> dimming);
     ndk::ScopedAStatus generateChallenge() override;
     ndk::ScopedAStatus revokeChallenge(int64_t challenge) override;
     ndk::ScopedAStatus enroll(const HardwareAuthToken& hat,
@@ -131,6 +130,7 @@ class Session : public BnSession {
     std::mutex mFodMutex;
     bool mFodRequested = false;
     bool mFodActive = false;
+    std::unique_ptr<FodDimming> mDimming;
     std::atomic<bool> mAcquiredGood = false;
     void setFpLhbmState(int mode);
     void setTouchResetCtrl(int command);

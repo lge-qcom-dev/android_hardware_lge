@@ -4,10 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#define LOG_TAG "android.hardware.biometrics.fingerprint-service.lineage"
+
 #include <fstream>
 #include <thread>
 
 #include <android-base/file.h>
+#include <log/log.h>
 
 #include "Legacy2Aidl.h"
 #include "Session.h"
@@ -26,14 +29,15 @@ void onClientDeath(void* cookie) {
 
 Session::Session(fingerprint_device_t* device, int userId, std::shared_ptr<ISessionCallback> cb,
                  LockoutTracker lockoutTracker, bool isUdfps, bool managedSequence,
-                 bool hasTouchResetCtrl)
+                 bool hasTouchResetCtrl, std::unique_ptr<FodDimming> dimming)
     : mDevice(device),
       mLockoutTracker(lockoutTracker),
       mUserId(userId),
       mCb(cb),
       mIsUdfps(isUdfps),
       mManagedSequence(managedSequence),
-      mHasTouchResetCtrl(hasTouchResetCtrl) {
+      mHasTouchResetCtrl(hasTouchResetCtrl),
+      mDimming(std::move(dimming)) {
     mDeathRecipient = AIBinder_DeathRecipient_new(onClientDeath);
 
     if (mIsUdfps) {
@@ -157,6 +161,7 @@ ndk::ScopedAStatus Session::onPointerDown(int32_t /*pointerId*/, int32_t /*x*/, 
 
     std::lock_guard lock(mFodMutex);
     if (!mFodRequested || mFodActive) return ndk::ScopedAStatus::ok();
+    if (mDimming) mDimming->show();
     // READY blocks normal backlight writes; keep it confined to an actual scan.
     setFpLhbmState(FP_LHBM_READY);
     mFodActive = true;
@@ -469,6 +474,7 @@ void Session::requestFod() {
     if (!mIsUdfps) return;
     std::lock_guard lock(mFodMutex);
     mFodRequested = true;
+    if (mDimming) mDimming->prepare();
 }
 
 void Session::setUdfpsExitState() {
@@ -486,6 +492,7 @@ void Session::restoreFod() {
     mDevice->do_extra_api_in(FINGERPRINT_LGE_SCAN_STOP, &param);
     setFpLhbmState(mManagedSequence ? FP_LHBM_SM_OFF : FP_LHBM_OFF);
     setFpLhbmState(FP_LHBM_EXIT);
+    if (mDimming) mDimming->hide();
     setTouchResetCtrl(PANEL_HW_RESET_POWER);
     mFodActive = false;
 }

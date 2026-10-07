@@ -1,2 +1,6 @@
 # Sysfs
 /sys/devices/virtual/input/lge_touch/lpwg_notify                            u:object_r:sysfs_gestures:s0
+
+# Fingerprint dimming helper
+/system_ext/bin/lge-fod-service                                           u:object_r:lge_fod_exec:s0
+/dev/socket/lge-fod                                                      u:object_r:lge_fod_socket:s0

@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#define LOG_TAG "android.hardware.biometrics.fingerprint-service.lineage"
+
 #include "Fingerprint.h"
 
 #include <android-base/properties.h>
@@ -13,6 +15,7 @@
 
 #include <android-base/logging.h>
 #include <android-base/strings.h>
+#include <log/log.h>
 
 namespace aidl::android::hardware::biometrics::fingerprint {
 
@@ -185,11 +188,20 @@ ndk::ScopedAStatus Fingerprint::createSession(int32_t /*sensorId*/, int32_t user
                                               std::shared_ptr<ISession>* out) {
     CHECK(mSession == nullptr || mSession->isClosed()) << "Open session already exists!";
 
+    std::unique_ptr<FodDimming> dimming;
+    const int dimmingReference = ::android::base::GetIntProperty(
+            "ro.vendor.fingerprint.dimming_reference", 0);
+    const auto locations = getSensorLocations();
+    if (dimmingReference > 0 && !locations.empty()) {
+        dimming = std::make_unique<FodDimming>(dimmingReference, locations.front());
+    }
+
     mSession = SharedRefBase::make<Session>(
             mDevice, userId, cb, mLockoutTracker,
             (mSensorType == FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC ||
              mSensorType == FingerprintSensorType::UNDER_DISPLAY_OPTICAL),
-            mConfig->get<bool>("managed_sequence"), mConfig->get<bool>("has_touch_reset_ctrl"));
+            mConfig->get<bool>("managed_sequence"), mConfig->get<bool>("has_touch_reset_ctrl"),
+            std::move(dimming));
     *out = mSession;
 
     mSession->linkToDeath(cb->asBinder().get());

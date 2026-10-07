@@ -1,0 +1,3 @@
+# The vendor fingerprint HAL controls the system-side dim mask over this socket.
+type lge_fod, domain;
+type lge_fod_socket, file_type, coredomain_socket;

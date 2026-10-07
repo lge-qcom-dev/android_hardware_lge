@@ -4,6 +4,7 @@
 # Fingerprint services and HALs
 PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint-service.lge \
+    lge-fod-service \
     sensors.lge
 
 $(call soong_config_set,surfaceflinger,udfps_lib,//hardware/lge:libudfps_extension.lge)

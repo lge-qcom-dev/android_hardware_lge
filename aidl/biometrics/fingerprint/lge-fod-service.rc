@@ -1,0 +1,5 @@
+service lge-fod /system_ext/bin/lge-fod-service
+    class core
+    user system
+    group system graphics
+    socket lge-fod seqpacket 0660 system system

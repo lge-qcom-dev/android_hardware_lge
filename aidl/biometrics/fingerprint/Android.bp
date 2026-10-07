@@ -14,6 +14,7 @@ cc_binary {
         "CancellationSignal.cpp",
         "Fingerprint.cpp",
         "FingerprintConfig.cpp",
+        "FodDimming.cpp",
         "LockoutTracker.cpp",
         "Session.cpp",
         "service.cpp",
@@ -45,4 +46,26 @@ sysprop_library {
     srcs: ["fingerprint.sysprop"],
     property_owner: "Vendor",
     vendor: true,
+}
+
+// SurfaceFlinger requires the system libbinder protocol; keep graphics out of the vendor HAL.
+cc_binary {
+    name: "lge-fod-service",
+    system_ext_specific: true,
+    init_rc: ["lge-fod-service.rc"],
+    srcs: [
+        "FodDimmingService.cpp",
+        "NativeFodDimming.cpp",
+    ],
+    include_dirs: ["frameworks/native/include"],
+    header_libs: ["libhardware_headers"],
+    shared_libs: [
+        "libbase",
+        "libbinder",
+        "libcutils",
+        "libgui",
+        "liblog",
+        "libui",
+        "libutils",
+    ],
 }

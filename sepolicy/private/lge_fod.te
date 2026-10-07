@@ -1,0 +1,12 @@
+type lge_fod_exec, exec_type, system_file_type, file_type;
+typeattribute lge_fod coredomain;
+init_daemon_domain(lge_fod)
+
+binder_use(lge_fod)
+hwbinder_use(lge_fod)
+binder_call(lge_fod, surfaceflinger)
+binder_call(surfaceflinger, lge_fod)
+allow lge_fod surfaceflinger_service:service_manager find;
+hal_client_domain(lge_fod, hal_graphics_allocator)
+allow lge_fod hal_graphics_composer:fd use;
+allow lge_fod ion_device:chr_file r_file_perms;

@@ -12,6 +12,7 @@ vendor.lge.fm_gain_control_speaker               u:object_r:vendor_audio_prop:s0
 
 # Fingerprint
 persist.vendor.fingerprint. u:object_r:vendor_lge_fingerprint_prop:s0
+ro.vendor.fingerprint.dimming_reference u:object_r:vendor_lge_fingerprint_prop:s0 exact int
 
 # FM
 vendor.hw.fm.version u:object_r:vendor_fm_prop:s0

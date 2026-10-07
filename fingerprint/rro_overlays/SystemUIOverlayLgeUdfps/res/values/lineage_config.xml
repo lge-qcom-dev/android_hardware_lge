@@ -4,43 +4,7 @@
      SPDX-License-Identifier: Apache-2.0
 -->
 <resources>
-    <!-- Whether to enable framework dimming for UDFPS -->
-    <bool name="config_udfpsFrameworkDimming">true</bool>
-
-    <!-- Brightness-to-alpha lookup table (LUT) for UDFPS framework dimming.
-         Each entry is in the format <brightness>,<alpha> where:
-           - brightness = panel backlight level
-           - alpha = dim layer transparency applied at that brightness
-         Rules:
-           • The entries should be strictly ascending by brightness.
-           • First entry = <minBrightness,maxAlpha>.
-           • Last entry  = <maxBrightness,minAlpha>.
-    -->
-    <string-array name="config_udfpsDimmingBrightnessAlphaArray" translatable="false">
-        <item>0,246</item>
-        <item>3,246</item>
-        <item>4,245</item>
-        <item>6,245</item>
-        <item>10,244</item>
-        <item>20,241</item>
-        <item>30,238</item>
-        <item>45,235</item>
-        <item>70,231</item>
-        <item>100,226</item>
-        <item>150,221</item>
-        <item>227,213</item>
-        <item>300,206</item>
-        <item>400,198</item>
-        <item>500,191</item>
-        <item>600,184</item>
-        <item>800,173</item>
-        <item>1023,167</item>
-        <item>1130,156</item>
-        <item>1211,151</item>
-        <item>1394,142</item>
-        <item>1598,133</item>
-        <item>1817,116</item>
-        <item>2047,108</item>
-        <item>4095,0</item>
-    </string-array>
+    <!-- The HAL owns scan-only brightness compensation. Framework dimming follows
+         the whole fingerprint overlay lifetime and would also dim the idle lockscreen. -->
+    <bool name="config_udfpsFrameworkDimming">false</bool>
 </resources>

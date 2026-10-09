@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2026 The LineageOS Project
+# SPDX-License-Identifier: Apache-2.0
+hal_attribute(lge_dualscreen)
+type hal_lge_dualscreen_default, domain;
+type hal_lge_dualscreen_default_exec, exec_type, vendor_file_type, file_type;
+type hal_lge_dualscreen_service, hal_service_type, service_manager_type;
+type sysfs_lge_dualscreen, fs_type, sysfs_type;
+type sysfs_lge_smartcover, fs_type, sysfs_type;
+
+init_daemon_domain(hal_lge_dualscreen_default)
+hal_server_domain(hal_lge_dualscreen_default, hal_lge_dualscreen)
+hal_client_domain(system_app, hal_lge_dualscreen)
+hal_attribute_service(hal_lge_dualscreen, hal_lge_dualscreen_service)
+binder_use(hal_lge_dualscreen_default)
+binder_call(hal_lge_dualscreen_client, hal_lge_dualscreen_server)
+binder_call(hal_lge_dualscreen_server, hal_lge_dualscreen_client)
+wakelock_use(hal_lge_dualscreen_default)
+
+r_dir_file(hal_lge_dualscreen_default, sysfs)
+r_dir_file(hal_lge_dualscreen_default, sysfs_usb)
+r_dir_file(hal_lge_dualscreen_default, sysfs_lge_smartcover)
+allow hal_lge_dualscreen_default sysfs_lge_dualscreen:dir r_dir_perms;
+allow hal_lge_dualscreen_default sysfs_lge_dualscreen:file rw_file_perms;
+allow hal_lge_dualscreen_default sysfs_lge_dualscreen:lnk_file r_file_perms;
+allow hal_lge_dualscreen_default self:netlink_kobject_uevent_socket create_socket_perms_no_ioctl;
+
+allow hal_lge_dualscreen_default hidraw_device:chr_file rw_file_perms;
+allowxperm hal_lge_dualscreen_default hidraw_device:chr_file ioctl { 0x4803 0x4806 0x4807 };
+allow hal_lge_dualscreen_default usb_serial_device:chr_file rw_file_perms;
+allowxperm hal_lge_dualscreen_default usb_serial_device:chr_file ioctl { 0x5401 0x5402 0x540b };
+
+# Velvet (caymanlm): Qualcomm labels the case HID as a QVR device.
+allow hal_lge_dualscreen_default vendor_qvr_hidraw_device:chr_file rw_file_perms;
+allowxperm hal_lge_dualscreen_default vendor_qvr_hidraw_device:chr_file ioctl { 0x4803 0x4806 0x4807 };

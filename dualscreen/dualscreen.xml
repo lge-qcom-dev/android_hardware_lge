@@ -1,0 +1,9 @@
+<!-- SPDX-FileCopyrightText: 2026 The LineageOS Project -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<manifest version="1.0" type="device">
+    <hal format="aidl">
+        <name>vendor.lge.hardware.dualscreen</name>
+        <version>1</version>
+        <fqname>IDualScreen/default</fqname>
+    </hal>
+</manifest>

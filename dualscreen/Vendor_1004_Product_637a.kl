@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: 2026 The LineageOS Project
+# SPDX-License-Identifier: Apache-2.0
+key 114 VOLUME_DOWN
+key 115 VOLUME_UP
+# LG's stock case layout maps this assistant button to INFO.
+key 358 ASSIST
+key 582 VOICE_ASSIST
+key 583 ASSIST

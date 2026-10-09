@@ -1,0 +1,46 @@
+// SPDX-FileCopyrightText: 2026 The LineageOS Project
+// SPDX-License-Identifier: Apache-2.0
+
+aidl_interface {
+    name: "vendor.lge.hardware.dualscreen",
+    owner: "lineage",
+    vendor_available: true,
+    srcs: ["aidl/vendor/lge/hardware/dualscreen/*.aidl"],
+    local_include_dir: "aidl",
+    stability: "vintf",
+    frozen: true,
+    versions_with_info: [{version: "1", imports: []}],
+    backend: {
+        cpp: {enabled: false},
+        java: {sdk_version: "system_current"},
+    },
+}
+
+cc_binary {
+    name: "vendor.lge.hardware.dualscreen-service",
+    vendor: true,
+    relative_install_path: "hw",
+    srcs: ["DualScreen.cpp", "Protocol.cpp", "service.cpp"],
+    shared_libs: [
+        "libbase",
+        "libbinder_ndk",
+        "libcutils",
+        "liblog",
+        "vendor.lge.hardware.dualscreen-V1-ndk",
+    ],
+    cflags: ["-Wall", "-Wextra", "-Werror"],
+    init_rc: ["dualscreen.rc"],
+    vintf_fragments: ["dualscreen.xml"],
+}
+
+android_app {
+    name: "LgeDualScreen",
+    system_ext_specific: true,
+    privileged: true,
+    certificate: "platform",
+    platform_apis: true,
+    manifest: "app/AndroidManifest.xml",
+    srcs: ["app/src/**/*.java"],
+    static_libs: ["vendor.lge.hardware.dualscreen-V1-java"],
+    optimize: {enabled: false},
+}

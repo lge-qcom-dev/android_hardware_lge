@@ -1,0 +1,2 @@
+genfscon sysfs /devices/virtual/dualscreen/ds2 u:object_r:sysfs_lge_dualscreen:s0
+genfscon sysfs /devices/virtual/smartcover/smartcover u:object_r:sysfs_lge_smartcover:s0
